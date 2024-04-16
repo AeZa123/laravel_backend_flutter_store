@@ -21,7 +21,8 @@ class ProductController extends Controller
     // ==========================================================================
     public function index()
     {
-        $products = Product::paginate(25); // 10 เป็นจำนวนรายการต่อหน้า
+        // $products = Product::paginate(25); // 10 เป็นจำนวนรายการต่อหน้า
+        $products = Product::join('categories', 'products.product_category_id', '=', 'categories.id')->paginate(25);
 
         $reponse = [
             'list_products' => $products,
@@ -138,7 +139,7 @@ class ProductController extends Controller
     public function show($id)
     {
 
-        $product = Product::find($id);
+        $product = Product::join('categories', 'products.product_category_id', '=', 'categories.id')->find($id);
         if (!$product) {
             return response()->json([
                 'msg' => 'Product not found',
