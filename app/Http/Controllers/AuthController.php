@@ -17,28 +17,74 @@ class AuthController extends Controller
     // =================================================================
     public function register(Request $request) {
 
-        $data = $request->validate([
-            'name' => 'required|string',
-            'tel' => 'required|string|max:10|min:10',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|confirmed',
-        ]);
+       
+
+        // $data = $request->validate([
+        //     'name' => 'required|string',
+        //     'tel' => 'required|string|max:10|min:10',
+        //     'email' => 'required|email|unique:users,email',
+        //     'password' => 'required|string|confirmed',
+        // ]);
+
+
+
+         // dd($request->all());
+         $validator = \Validator::make(
+            $request->all(),
+            [
+                'name' => 'required|string',
+                'tel' => 'required|string|max:10|min:10',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|confirmed',
+            ],
+            [
+                'name.required' => 'กรุณาระบุชื่อ',
+                'name.string' => 'ชื่อต้องเป็นตัวอักษร',
+                'email.required' => 'กรุณาระบุอีเมล',
+                'email.string' => 'อีเมลต้องเป็นตัวอักษร',
+                'email.email' => 'รูปแบบอีเมลไม่ถูกต้อง',
+                'email.unique' => 'อีเมลนี้มีอยู่ในระบบแล้ว',
+                'password.required' => 'กรุณาระบุรหัสผ่าน',
+                'password.confirmed' => 'รหัสผ่านต้องตรงกัน',
+          
+         
+            ]
+        );
+
+        //ถ้า validate ไม่ผ่านให้ส่ง error ไป  แต่ถ้าผ่านให้ทำการบันทึกข้อมูลลง database
+        if (!$validator->passes()) {
+            return response()->json(['status'=> 'error', 'code' => 400, 'error' => $validator->errors()->toArray()]);
+        }
+
+
+
+        $data = array(
+            'name' => $request->name,
+            'tel' => $request->tel,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'avatar' => 'https://www.google.co.th/url?sa=i&url=https%3A%2F%2Fwww.sermpisit.com%2Fprofile%2F&psig=AOvVaw3AXNsye8CwOeYEW6RowVpf&ust=1641877791054000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJDo68a1pvUCFQAAAAAdAAAAABAD',
+            'role' => 'user',
+        );
+
+        $createUser = User::create($data);
 
         // $data = $request->all();
 
-        $user = User::create([
-            'name' => $data['name'],
-            'tel' => $data['tel'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-            'avatar' => 'https://www.google.co.th/url?sa=i&url=https%3A%2F%2Fwww.sermpisit.com%2Fprofile%2F&psig=AOvVaw3AXNsye8CwOeYEW6RowVpf&ust=1641877791054000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJDo68a1pvUCFQAAAAAdAAAAABAD',
-            'role' => 'user',
-        ]);
+        // $user = User::create([
+        //     'name' => $data['name'],
+        //     'tel' => $data['tel'],
+        //     'email' => $data['email'],
+        //     'password' => bcrypt($data['password']),
+        //     'avatar' => 'https://www.google.co.th/url?sa=i&url=https%3A%2F%2Fwww.sermpisit.com%2Fprofile%2F&psig=AOvVaw3AXNsye8CwOeYEW6RowVpf&ust=1641877791054000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCJDo68a1pvUCFQAAAAAdAAAAABAD',
+        //     'role' => 'user',
+        // ]);
 
-        $token = $user->createToken('my-device')->plainTextToken;
+        $token = $createUser->createToken('my-device')->plainTextToken;
 
         $reponse = [
-            'user' => $user,
+            'status' => 'success',
+            'user' => $createUser,
             'token' => $token
         ];
 
