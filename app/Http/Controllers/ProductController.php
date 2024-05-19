@@ -167,7 +167,15 @@ class ProductController extends Controller
     public function show($id)
     {
 
-        $product = Product::join('categories', 'products.product_category_id', '=', 'categories.id')->find($id);
+        // $product = Product::join('categories', 'products.product_category_id', '=', 'categories.id')->find($id);
+
+
+        $product = Product::join('categories', 'products.product_category_id', '=', 'categories.id')
+                  ->select('products.*', 'categories.id as product_category_id', 'categories.category_name') // เลือกคอลัมน์และตั้งชื่อ alias
+                  ->where('products.id', $id)
+                  ->first();
+
+
         if (!$product) {
 
             $reponse = [
